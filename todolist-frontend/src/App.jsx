@@ -75,20 +75,21 @@ function App() {
   return (
     <div style={{ maxWidth: '800px', margin: '0 auto', padding: '20px', fontFamily: 'sans-serif' }}>
       <h1 style={{ textAlign: 'center', color: '#333' }}>To-Do List: Task Management</h1>
-      <TaskForm 
-        key={taskToEdit ? taskToEdit.id : 'new'} 
-        taskToEdit={taskToEdit} 
+      <TaskForm
+        key={taskToEdit ? taskToEdit.id : 'new'}
+        taskToEdit={taskToEdit}
         onTaskAdded={handleTaskAdded}
         onTaskUpdated={handleTaskUpdated}
         onCancelEdit={() => setTaskToEdit(null)}
       />
-      <TaskList 
-        tasks={tasks} 
-        onEditClick={(task) => setTaskToEdit(task)} 
-        onDeleteClick={handleDeleteTask} 
+      <TaskList
+        tasks={tasks}
+        onEditClick={(task) => setTaskToEdit(task)}
+        onDeleteClick={handleDeleteTask}
       />
     </div>
   );
 }
 
+export default App;
 export default App;
