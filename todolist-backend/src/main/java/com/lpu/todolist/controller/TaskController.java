@@ -6,28 +6,34 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import com.lpu.todolist.security.CustomUserDetails;
+
 import java.util.List;
 
 @RestController
-@RequestMapping("/tasks")
+@RequestMapping("/api/tasks")
 public class TaskController {
 
     @Autowired
     private TaskRepository taskRepository;
 
     @GetMapping
-    public List<Task> getAllTasks() {
-        return taskRepository.findAll();
+    public List<Task> getAllTasks(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        if (userDetails == null) return List.of();
+        return taskRepository.findByUserId(userDetails.getUser().getId());
     }
 
     @PostMapping
-    public Task createTask(@RequestBody Task task) {
+    public Task createTask(@RequestBody Task task, @AuthenticationPrincipal CustomUserDetails userDetails) {
+        task.setUserId(userDetails.getUser().getId());
         return taskRepository.save(task);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Task> updateTask(@PathVariable Long id, @RequestBody Task taskDetails) {
+    public ResponseEntity<Task> updateTask(@PathVariable Long id, @RequestBody Task taskDetails, @AuthenticationPrincipal CustomUserDetails userDetails) {
         return taskRepository.findById(id)
+                .filter(task -> task.getUserId().equals(userDetails.getUser().getId()))
                 .map(task -> {
                     task.setDescription(taskDetails.getDescription());
                     task.setPriority(taskDetails.getPriority());
@@ -39,8 +45,9 @@ public class TaskController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteTask(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteTask(@PathVariable Long id, @AuthenticationPrincipal CustomUserDetails userDetails) {
         return taskRepository.findById(id)
+                .filter(task -> task.getUserId().equals(userDetails.getUser().getId()))
                 .map(task -> {
                     taskRepository.delete(task);
                     return ResponseEntity.ok().<Void>build();
