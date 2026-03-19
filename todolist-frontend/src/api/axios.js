@@ -23,8 +23,8 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    // If the server returns 401 Unauthorized, we might want to automatically logout
-    if (error.response && error.response.status === 401) {
+    // If the server returns 401 Unauthorized or 403 Forbidden (common with Spring Security for invalid JWT), log out
+    if (error.response && (error.response.status === 401 || error.response.status === 403)) {
       localStorage.removeItem('token');
       // A small hack to redirect to login if not already there, 
       // but usually react-router's context manages this better.

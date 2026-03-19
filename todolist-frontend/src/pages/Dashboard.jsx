@@ -1,9 +1,42 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { LogOut, CalendarCheck } from 'lucide-react';
+import api from '../api/axios';
+import TaskList from '../components/TaskList';
 
 export default function Dashboard() {
   const { logout } = useAuth();
+  const navigate = useNavigate();
+  const [tasks, setTasks] = useState([]);
+
+  const fetchTasks = async () => {
+    try {
+      const response = await api.get('/tasks');
+      setTasks(response.data);
+    } catch (err) {
+      console.error('Failed to fetch tasks', err);
+    }
+  };
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    fetchTasks();
+  }, []);
+
+  const handleDeleteTask = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this task?")) return;
+    try {
+      await api.delete(`/tasks/${id}`);
+      fetchTasks();
+    } catch (error) {
+      console.error('Error deleting task:', error);
+    }
+  };
+
+  const handleEditClick = (task) => {
+    navigate(`/edit-task/${task.id}`);
+  };
 
   return (
     <div className="dashboard-container">
@@ -25,23 +58,17 @@ export default function Dashboard() {
         </div>
 
         <div className="dashboard-grid">
-          <div className="card">
-            <h3>Your Tasks</h3>
-            <p>You currently have no pending tasks. Start adding some!</p>
-            <button className="primary-btn">Add Task</button>
-          </div>
-          <div className="card">
-            <h3>Statistics</h3>
-            <div className="stats-row">
-              <div className="stat-item">
-                <span className="stat-value">0</span>
-                <span className="stat-label">Pending</span>
-              </div>
-              <div className="stat-item">
-                <span className="stat-value">0</span>
-                <span className="stat-label">Completed</span>
-              </div>
+          <div className="card" style={{ gridColumn: '1 / -1' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+              <h3>Your Tasks</h3>
+              <button onClick={() => navigate('/add-task')} className="primary-btn">Add Task</button>
             </div>
+            
+            <TaskList 
+              tasks={tasks}
+              onEditClick={handleEditClick}
+              onDeleteClick={handleDeleteTask}
+            />
           </div>
         </div>
       </main>
